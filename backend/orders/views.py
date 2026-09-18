@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,22 +8,30 @@ from .serializers import OrderCreateSerializer, OrderDetailSerializer
 
 
 class OrderCreateView(APIView):
-    """Mijoz buyurtma yuborganda shu endpoint chaqiriladi. POST /api/orders/"""
     def post(self, request):
         serializer = OrderCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
-        return Response(OrderDetailSerializer(order).data, status=201)
+        order_data = OrderDetailSerializer(order).data
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'restaurant_{order.table.restaurant_id}',
+            {
+                'type': 'new_order',
+                'order': order_data,
+            }
+        )
+
+        return Response(order_data, status=201)
 
 
 class OrderDetailView(generics.RetrieveAPIView):
-    """Mijoz yoki oshxona buyurtma holatini ko'rish uchun. GET /api/orders/<id>/"""
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
 
 
 class RestaurantOrdersView(generics.ListAPIView):
-    """Oshxona ekrani uchun: shu restorandagi barcha buyurtmalar. GET /api/restaurant/<restaurant_id>/orders/"""
     serializer_class = OrderDetailSerializer
 
     def get_queryset(self):
