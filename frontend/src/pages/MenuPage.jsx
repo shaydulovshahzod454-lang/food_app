@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 
 const API_BASE = 'http://127.0.0.1:8000/api'
 
 function MenuPage() {
   const { qrToken } = useParams()
+  const navigate = useNavigate()
   const [menu, setMenu] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [cart, setCart] = useState([])
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetch(`${API_BASE}/table/${qrToken}/`)
@@ -73,12 +75,34 @@ function MenuPage() {
         ))}
       </div>
 
-      {cart.length > 0 && (
+            {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
           <div className="flex justify-between items-center">
             <span className="font-semibold">{cart.reduce((s, i) => s + i.quantity, 0)} taom — {cartTotal.toLocaleString()} so'm</span>
-            <button className="bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
-              Buyurtma berish
+            <button
+              disabled={submitting}
+              onClick={async () => {
+                setSubmitting(true)
+                try {
+                  const res = await fetch(`${API_BASE}/orders/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      table_id: menu.table_id,
+                      items: cart.map(i => ({ menu_item_id: i.id, quantity: i.quantity, note: '' }))
+                    })
+                  })
+                  if (!res.ok) throw new Error('Xatolik yuz berdi')
+                  const order = await res.json()
+                  navigate(`/order/${order.id}`)
+                } catch (err) {
+                  alert(err.message)
+                  setSubmitting(false)
+                }
+              }}
+              className="bg-green-700 text-white px-6 py-2 rounded-lg font-medium disabled:opacity-50"
+            >
+              {submitting ? 'Yuborilmoqda...' : 'Buyurtma berish'}
             </button>
           </div>
         </div>
