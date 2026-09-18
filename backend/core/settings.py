@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'restaurants',
     'orders',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,11 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+ASGI_APPLICATION = 'core.asgi.application'
