@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
+import { apiFetch } from '../api'
 
 const API_BASE = 'http://127.0.0.1:8000/api'
 const WS_BASE = 'ws://127.0.0.1:8000'
@@ -20,9 +21,9 @@ function DashboardPage() {
   const wsRef = useRef(null)
 
   useEffect(() => {
-    fetch(`${API_BASE}/restaurant/${restaurantId}/orders/`)
-      .then(res => res.json())
-      .then(setOrders)
+  apiFetch(`/restaurant/${restaurantId}/orders/`)
+    .then(res => res.json())
+    .then(setOrders)
 
     const ws = new WebSocket(`${WS_BASE}/ws/restaurant/${restaurantId}/`)
     ws.onmessage = (e) => {
@@ -35,12 +36,11 @@ function DashboardPage() {
   }, [restaurantId])
 
     const updateStatus = async (orderId, newStatus) => {
-    try {
-      const res = await fetch(`${API_BASE}/orders/${orderId}/status/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      })
+  try {
+    const res = await apiFetch(`/orders/${orderId}/status/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus })
+    })
       if (!res.ok) throw new Error('Xatolik')
       const updated = await res.json()
       setOrders(prev => prev.map(o => o.id === orderId ? updated : o))

@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import MenuPage from './pages/MenuPage'
 import OrderStatusPage from './pages/OrderStatusPage'
 import DashboardPage from './pages/DashboardPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 
 function App() {
   return (
@@ -10,6 +12,8 @@ function App() {
       <Route path="/order/:orderId" element={<OrderStatusPage />} />
       <Route path="/" element={<div className="p-8 text-center">Restoran platformasi</div>} />
       <Route path="/dashboard/:restaurantId" element={<DashboardPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
     </Routes>
   )
 }

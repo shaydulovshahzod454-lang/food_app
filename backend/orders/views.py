@@ -4,6 +4,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from .models import Order
 from .serializers import OrderCreateSerializer, OrderDetailSerializer
 
@@ -43,12 +44,29 @@ class OrderStatusUpdateView(UpdateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderDetailSerializer
     http_method_names = ['patch']
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
         order = self.get_object()
+        # Faqat shu buyurtma tegishli restoran egasi o'zgartira oladi
+        if order.table.restaurant.owner != request.user:
+            return Response({'error': 'Ruxsat yo\'q'}, status=403)
         new_status = request.data.get('status')
         if new_status not in dict(Order.STATUS_CHOICES):
             return Response({'error': 'Noto\'g\'ri status'}, status=400)
         order.status = new_status
         order.save()
         return Response(OrderDetailSerializer(order).data)
+
+
+class RestaurantOrdersView(generics.ListAPIView):
+    serializer_class = OrderDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        restaurant_id = self.kwargs['restaurant_id']
+        # Faqat o'z restoranining buyurtmalarini ko'ra oladi
+        return Order.objects.filter(
+            table__restaurant_id=restaurant_id,
+            table__restaurant__owner=self.request.user
+        ).order_by('-created_at')
