@@ -5,7 +5,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Order
+from datetime import date, timedelta
+from django.db.models import Sum, Count, F
+from django.db.models.functions import TruncDate
+from .models import Order, OrderItem
 from .serializers import OrderCreateSerializer, OrderDetailSerializer
 
 
@@ -70,3 +73,40 @@ class RestaurantOrdersView(generics.ListAPIView):
             table__restaurant_id=restaurant_id,
             table__restaurant__owner=self.request.user
         ).order_by('-created_at')
+
+class DailyStatsView(APIView):
+    """
+    GET /api/restaurant/<restaurant_id>/stats/daily/?date=2026-09-19
+    date parametri berilmasa, bugungi kun olinadi.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, restaurant_id):
+        target_date_str = request.query_params.get('date')
+        target_date = date.fromisoformat(target_date_str) if target_date_str else date.today()
+
+        orders_qs = Order.objects.filter(
+            table__restaurant_id=restaurant_id,
+            table__restaurant__owner=request.user,
+            created_at__date=target_date,
+        ).exclude(status='cancelled')
+
+        total_orders = orders_qs.count()
+
+        items_qs = OrderItem.objects.filter(order__in=orders_qs)
+
+        total_revenue = items_qs.aggregate(
+            total=Sum(F('quantity') * F('menu_item__price'))
+        )['total'] or 0
+
+        top_items = items_qs.values('menu_item__name').annotate(
+            total_qty=Sum('quantity'),
+            total_sum=Sum(F('quantity') * F('menu_item__price'))
+        ).order_by('-total_qty')[:5]
+
+        return Response({
+            'date': target_date.isoformat(),
+            'total_orders': total_orders,
+            'total_revenue': total_revenue,
+            'top_items': list(top_items),
+        })
