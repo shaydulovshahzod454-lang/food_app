@@ -53,3 +53,15 @@ class RestaurantRegisterSerializer(serializers.Serializer):
             slug=validated_data['slug']
         )
         return restaurant
+
+class MenuItemWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'category', 'name', 'description', 'price', 'image', 'is_available']
+
+
+class MenuCategoryWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuCategory
+        fields = ['id', 'restaurant', 'name', 'order']
+        read_only_fields = ['restaurant']

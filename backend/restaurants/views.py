@@ -1,11 +1,11 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Restaurant, Table
-from .serializers import RestaurantMenuSerializer, RestaurantRegisterSerializer
+from .models import Restaurant, Table, MenuCategory, MenuItem
+from .serializers import RestaurantMenuSerializer, RestaurantRegisterSerializer, MenuItemWriteSerializer, MenuCategoryWriteSerializer
 
 
 class TableMenuView(APIView):
@@ -47,3 +47,21 @@ class MyRestaurantView(APIView):
         except Restaurant.DoesNotExist:
             return Response({'error': 'Restoran topilmadi'}, status=404)
         return Response({'id': restaurant.id, 'name': restaurant.name, 'slug': restaurant.slug})
+
+class MenuCategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = MenuCategoryWriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return MenuCategory.objects.filter(restaurant__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(restaurant=self.request.user.restaurant)
+
+
+class MenuItemViewSet(viewsets.ModelViewSet):
+    serializer_class = MenuItemWriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return MenuItem.objects.filter(category__restaurant__owner=self.request.user)
