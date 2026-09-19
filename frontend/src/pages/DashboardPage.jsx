@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { apiFetch } from '../api'
+import { Link } from 'react-router-dom'
 
 const API_BASE = 'http://127.0.0.1:8000/api'
 const WS_BASE = 'ws://127.0.0.1:8000'
@@ -56,7 +57,11 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-xl font-bold mb-4">Buyurtmalar paneli</h1>
+      <div className="flex justify-between items-center mb-4">
+  <h1 className="text-xl font-bold">Buyurtmalar paneli</h1>
+  <Link to="/menu-manage" className="text-sm text-green-700 font-medium">Menyuni boshqarish →</Link>
+  <Link to="/tables" className="text-sm text-green-700 font-medium">Stollar →</Link>
+</div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {orders.map(order => (
           <div key={order.id} className="bg-white rounded-lg shadow p-4">

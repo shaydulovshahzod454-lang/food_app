@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import MenuManagePage from './pages/MenuManagePage'
+import TablesPage from './pages/TablesPage'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/menu-manage" element={<MenuManagePage />} />
+      <Route path="/tables" element={<TablesPage />} />
     </Routes>
   )
 }

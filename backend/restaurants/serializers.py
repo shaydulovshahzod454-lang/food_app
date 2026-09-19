@@ -65,3 +65,9 @@ class MenuCategoryWriteSerializer(serializers.ModelSerializer):
         model = MenuCategory
         fields = ['id', 'restaurant', 'name', 'order']
         read_only_fields = ['restaurant']
+
+class TableWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table
+        fields = ['id', 'restaurant', 'number', 'qr_token']
+        read_only_fields = ['restaurant', 'qr_token']

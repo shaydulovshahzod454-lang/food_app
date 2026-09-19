@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Restaurant, Table, MenuCategory, MenuItem
-from .serializers import RestaurantMenuSerializer, RestaurantRegisterSerializer, MenuItemWriteSerializer, MenuCategoryWriteSerializer
+from .models import Restaurant, Table, MenuCategory, MenuItem, Table
+from .serializers import RestaurantMenuSerializer, RestaurantRegisterSerializer, MenuItemWriteSerializer, MenuCategoryWriteSerializer, TableWriteSerializer
 
 
 class TableMenuView(APIView):
@@ -65,3 +65,13 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return MenuItem.objects.filter(category__restaurant__owner=self.request.user)
+
+class TableViewSet(viewsets.ModelViewSet):
+    serializer_class = TableWriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Table.objects.filter(restaurant__owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(restaurant=self.request.user.restaurant)
