@@ -61,6 +61,7 @@ function DashboardPage() {
   <h1 className="text-xl font-bold">Buyurtmalar paneli</h1>
   <Link to="/menu-manage" className="text-sm text-green-700 font-medium">Menyuni boshqarish →</Link>
   <Link to="/tables" className="text-sm text-green-700 font-medium">Stollar →</Link>
+  <Link to={`/stats/${restaurantId}`} className="text-sm text-green-700 font-medium">Statistika →</Link>
 </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {orders.map(order => (
